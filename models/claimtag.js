@@ -13,6 +13,11 @@ const claimtagSchema = new Schema(
         }
       },
     },
+    collection: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: 'Claimtag',
+    },
     owner: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
   },
   { timestamps: true, toJSON: { virtuals: true } }

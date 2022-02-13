@@ -3,12 +3,9 @@ var admin = require('firebase-admin')
 
 const Schema = mongoose.Schema
 
-const { MAX_CLAIMTAGS } = process.env
-
 const userSchema = new Schema(
   {
     fid: { type: String, unique: true },
-    maxClaimtags: { type: Number, default: MAX_CLAIMTAGS },
   },
   { timestamps: true }
 )

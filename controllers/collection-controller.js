@@ -2,38 +2,63 @@ const mongoose = require('mongoose')
 
 const HttpError = require('../models/http-error')
 const Claimtag = require('../models/claimtag')
+const Collection = require('../models/collection')
 
 const createCollection = async (req, res, next) => {
   const owner = req.user
 
-  const { count } = req.body
-  let currentClaimtagCount
+  // const { count } = req.body
+  // let currentClaimtagCount
+
+  // try {
+  //   currentClaimtagCount = await Claimtag.countDocuments({ owner: owner.id })
+  // } catch (err) {
+  //   let error = new HttpError(
+  //     `Sorry, we couldn't create a new claimtag. Please try again.`,
+  //     500
+  //   )
+
+  //   return next(error)
+  // }
+
+  // const remainingClaimtagCount = owner.maxClaimtags - currentClaimtagCount
+
+  // if (remainingClaimtagCount <= 0) {
+  //   let error = new HttpError(
+  //     `You have reached the maximum number of claimtags. Please delete some claimtags before creating more.`,
+  //     401
+  //   )
+
+  //   return next(error)
+  // }
+
+  // count = Math.min(count, remainingClaimtagCount)
+
+  let collection
 
   try {
-    currentClaimtagCount = await Claimtag.countDocuments({ owner: owner.id })
+    if (!!owner) {
+      collection = await Collection.create({ owner })
+    } else {
+      collection = await Collection.create()
+    }
   } catch (err) {
     let error = new HttpError(
-      `Sorry, we couldn't create a new claimtag. Please try again.`,
+      `Sorry, we couldn't create your claimtags. Please try again.`,
       500
     )
 
     return next(error)
   }
 
-  const remainingClaimtagCount = owner.maxClaimtags - currentClaimtagCount
+  let claimtagArray
 
-  if (remainingClaimtagCount <= 0) {
-    let error = new HttpError(
-      `You have reached the maximum number of claimtags. Please delete some claimtags before creating more.`,
-      401
-    )
-
-    return next(error)
+  if (!!owner) {
+    claimtagArray = Array(count).fill({ owner, collection })
+  } else {
+    claimtagArray = Array(count).fill({ collection })
   }
 
-  count = Math.min(count, remainingClaimtagCount)
-
-  const claimtagArray = Array(count).fill({ owner })
   let claimtags
 
   try {
