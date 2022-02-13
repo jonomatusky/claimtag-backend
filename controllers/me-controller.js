@@ -144,29 +144,12 @@ const deleteMe = async (req, res, next) => {
     return next(error)
   }
   try {
-    claimtags = await Claimtag.find({ owner: user })
-
-    for (piece in pieces) {
-      if (piece.tineyeId) {
-        try {
-          tineye.remove(piece.tineyeId).then(data => {
-            console.log('Tineye delete status: ' + data.status)
-          })
-        } catch (error) {
-          console.log('unable to delete from tineye')
-          console.log(error)
-        }
-      }
-    }
-
-    await Piece.updateMany(
+    await Claimtag.updateMany(
       { owner: user },
       { owner: user_removed, isRemoved: true }
     )
-    console.log(pieces)
     await user.remove()
   } catch (err) {
-    console.log(err)
     const error = new HttpError('Unable to remove user. Please try again.', 500)
     return next(error)
   }

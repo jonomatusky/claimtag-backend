@@ -37,7 +37,7 @@ app.use('/api/users', userRouter)
 
 app.use('/api/me', meRouter)
 
-app.use('/api/pieces', claimtagRouter)
+app.use('/api/claimtags', claimtagRouter)
 
 app.use('/api/collections', collectionRouter)
 
@@ -64,8 +64,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_URL}/${DB_NAME}?retryWrites=true&w=majority`,
-    { useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true }
+    `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_URL}/${DB_NAME}?retryWrites=true&w=majority`
   )
   .then(() => {
     app.listen(port)
