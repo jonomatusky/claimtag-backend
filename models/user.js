@@ -6,6 +6,7 @@ const Schema = mongoose.Schema
 const userSchema = new Schema(
   {
     fid: { type: String, unique: true },
+    email: { type: String, unique: true },
   },
   { timestamps: true }
 )

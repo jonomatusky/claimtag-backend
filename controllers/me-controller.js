@@ -2,30 +2,14 @@ const mongoose = require('mongoose')
 
 const User = require('../models/user')
 const Claimtag = require('../models/claimtag')
+const HttpError = require('../models/http-error')
 
 const createMe = async (req, res, next) => {
-  const reqUser = req.user
-  let user = {}
+  const { user } = req
 
-  const updates = req.body
-  const updateKeys = Object.keys(updates)
-
-  const allowedUpdates = ['username', 'email', 'displayName']
-
-  const isValidOperation = updateKeys.every(update =>
-    allowedUpdates.includes(update)
-  )
-
-  if (!isValidOperation) {
-    const error = new HttpError('Invalid updates.', 400)
-    return next(error)
-  }
-
-  updateKeys.forEach(updateKey => (user[updateKey] = updates[updateKey]))
-
-  if (!(reqUser || {}).id) {
+  if (!user.id) {
     try {
-      user = new User({ ...req.user, ...user })
+      user = new User(user)
       await user.save()
     } catch (err) {
       let error = new HttpError(
@@ -33,24 +17,11 @@ const createMe = async (req, res, next) => {
         400
       )
 
-      if (((err.errors || {}).username || {}).kind === 'unique') {
-        error = new HttpError(
-          'Username already exists! Please select a different username.',
-          400
-        )
-      }
-
       if ((err.errors.fid || {}).kind === 'unique') {
         error = new HttpError('User already exists!', 400)
       }
 
       return next(error)
-    }
-
-    try {
-      await mailchimp.subscribe({ email: reqUser.email })
-    } catch (err) {
-      console.log('there was an error subscribing this user')
     }
   } else {
     user = reqUser
@@ -60,21 +31,31 @@ const createMe = async (req, res, next) => {
 }
 
 const getMe = async (req, res, next) => {
-  let user = {}
+  let { user } = req
 
-  try {
-    if (req.user._id) {
-      user = req.user.toJSON()
-    }
-  } catch (err) {
-    let error = new HttpError(
-      `Sorry, there was an error accessing your account. Please try again.`,
-      500
+  if (!user) {
+    const error = new HttpError(
+      `Sorry, we couldn't find your account. Please try again.`,
+      404
     )
     return next(error)
   }
 
-  res.status(200).json({ user })
+  if (user._id) {
+    res.status(201).json({ user: user.toJSON() })
+  } else {
+    try {
+      newUser = new User(user)
+      await newUser.save()
+      res.status(201).json({ user: newUser.toJSON() })
+    } catch (err) {
+      let error = new HttpError(
+        `Sorry, there was an error accessing your account. Please try again.`,
+        400
+      )
+      return next(error)
+    }
+  }
 }
 
 const updateMe = async (req, res, next) => {
@@ -105,7 +86,6 @@ const updateMe = async (req, res, next) => {
   try {
     await user.save()
   } catch (err) {
-    console.log(err)
     let error = new HttpError(
       'Unable to update your profile. Please verify your information.',
       400

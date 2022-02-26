@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 
 const HttpError = require('../models/http-error')
 const Claimtag = require('../models/claimtag')
-const { default: base64url } = require('base64url')
 
 const createClaimtag = async (req, res, next) => {
   const owner = req.user
@@ -23,24 +22,12 @@ const createClaimtag = async (req, res, next) => {
 }
 
 const getClaimtag = async (req, res, next) => {
-  const { path } = req.params
-
-  const claimtagId = base64url.decode(path, 'hex')
+  const { claimtagId } = req.params
 
   let claimtag
 
-  console.log(base64url.encode('620fabe8e005d3a9a7b557b3', 'hex'))
-
-  if (!claimtagId) {
-    const error = new HttpError(
-      'There was an error retreiving this claimtag. Please try again.',
-      500
-    )
-    return next(error)
-  }
-
   try {
-    claimtag = await Claimtag.findById(claimtagId)
+    claimtag = await Claimtag.findOne({ claimtagId })
   } catch (err) {
     const error = new HttpError(
       'There was an error retreiving this claimtag. Please try again.',
@@ -54,7 +41,6 @@ const getClaimtag = async (req, res, next) => {
       'This claimtag has not been created yet or has been deleted. Please try a different claimtag.',
       404
     )
-    return next(error)
   }
 
   if (claimtag && !claimtag.url) {
@@ -64,53 +50,28 @@ const getClaimtag = async (req, res, next) => {
   return res.status(201).json({ claimtag: claimtag.toJSON() })
 }
 
-const claimClaimtag = async (req, res, next) => {
-  const { path } = req.params
-  const { url } = req.body
-  console.log(url)
-  let claimtag
-
-  const claimtagId = base64url.decode(path, 'hex')
+const getClaimtags = async (req, res, next) => {
+  let { user, query } = req
+  let claimtags
 
   try {
-    claimtag = await Claimtag.findById(claimtagId)
+    claimtags = await Claimtag.find({ ...query, owner: user.id })
   } catch (err) {
-    let error = new HttpError(
-      `Sorry, we couldn't create a new claimtag. Please try again.`,
+    const error = new HttpError(
+      'There was an error retreiving these Claimtags. Please try again.',
       500
     )
     return next(error)
   }
 
-  if (!claimtag) {
-    let error = new HttpError(
-      `Sorry, this claimtag has not been created yet or has been deleted. Please try a different claimtag.`,
-      404
-    )
+  if (!claimtags || claimtags.length === 0) {
+    const error = new HttpError('No Claimtags found. Please try again.', 404)
     return next(error)
   }
 
-  if (!!claimtag.url) {
-    let error = new HttpError(
-      `Sorry, this claimtag has already been claimed. Please try a different claimtag.`,
-      401
-    )
-    return next(error)
-  }
-
-  claimtag.url = url
-
-  try {
-    await claimtag.save()
-  } catch (err) {
-    let error = new HttpError(
-      `Sorry, we couldn't claim this claimtag. Please try again.`,
-      500
-    )
-    return next(error)
-  }
-
-  res.status(201).json({ claimtag: claimtag.toJSON() })
+  res
+    .status(201)
+    .json({ claimtags: claimtags.map(claimtag => claimtag.toJSON()) })
 }
 
 const deleteClaimtag = async (req, res, next) => {
@@ -127,5 +88,5 @@ const deleteClaimtag = async (req, res, next) => {
 
 exports.createClaimtag = createClaimtag
 exports.getClaimtag = getClaimtag
-exports.claimClaimtag = claimClaimtag
+exports.getClaimtags = getClaimtags
 exports.deleteClaimtag = deleteClaimtag

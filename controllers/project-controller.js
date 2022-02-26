@@ -2,9 +2,10 @@ const mongoose = require('mongoose')
 
 const HttpError = require('../models/http-error')
 const Claimtag = require('../models/claimtag')
-const Collection = require('../models/collection')
+const Project = require('../models/project')
+const { default: sgMail } = require('../util/sendgrid')
 
-const createCollection = async (req, res, next) => {
+const createProject = async (req, res, next) => {
   const owner = req.user
 
   // const { count } = req.body
@@ -34,13 +35,13 @@ const createCollection = async (req, res, next) => {
 
   // count = Math.min(count, remainingClaimtagCount)
 
-  let collection
+  let project
 
   try {
     if (!!owner) {
-      collection = await Collection.create({ owner })
+      project = await Project.create({ owner })
     } else {
-      collection = await Collection.create()
+      project = await Project.create()
     }
   } catch (err) {
     let error = new HttpError(
@@ -54,9 +55,9 @@ const createCollection = async (req, res, next) => {
   let claimtagArray
 
   if (!!owner) {
-    claimtagArray = Array(count).fill({ owner, collection })
+    claimtagArray = Array(count).fill({ owner, project })
   } else {
-    claimtagArray = Array(count).fill({ collection })
+    claimtagArray = Array(count).fill({ project })
   }
 
   let claimtags
@@ -72,32 +73,66 @@ const createCollection = async (req, res, next) => {
     return next(error)
   }
 
-  res
-    .status(201)
-    .json({ claimtags: claimtags.map(claimtag => claimtag.toJSON()) })
+  res.status(201).json({
+    project: {
+      ...project.toJSON(),
+      claimtags: claimtags.map(claimtag => claimtag.toJSON()),
+    },
+  })
 }
 
-const getCollection = async (req, res, next) => {
-  let user = req.user
-
-  let query = req.query || {}
-  query.owner = user
+const getProject = async (req, res, next) => {
+  let { user } = req.user
+  let { pid } = req.params
+  let project
+  let claimtags
 
   try {
-    const claimtags = await Claimtag.find(query)
-    res
-      .status(201)
-      .json({ claimtags: claimtags.map(claimtag => claimtag.toJSON()) })
+    project = await Project.findById(pid)
   } catch (err) {
     const error = new HttpError(
-      'There was an error retreiving the claimtags. Please try again.',
+      'Error accessing this resource. Please try again.',
       500
+    )
+    return next(error)
+  }
+
+  if (!project) {
+    const error = new HttpError(
+      'Error accessing this resource. Please try again.',
+      404
+    )
+    return next(error)
+  }
+
+  if (!project.owner || user === project.owner || user.admin) {
+    const query = { project: pid }
+
+    try {
+      claimtags = await Claimtag.find(query)
+      res.status(201).json({
+        project: {
+          ...project.toJSON(),
+          claimtags: claimtags.map(claimtag => claimtag.toJSON()),
+        },
+      })
+    } catch (err) {
+      const error = new HttpError(
+        'There was an error retreiving the claimtags. Please try again.',
+        500
+      )
+      return next(error)
+    }
+  } else {
+    const error = new HttpError(
+      'You do not have permission to view this resource.',
+      401
     )
     return next(error)
   }
 }
 
-const deleteCollection = async (req, res, next) => {
+const deleteProject = async (req, res, next) => {
   const query = req.query || {}
   const { claimed } = query
 
@@ -118,6 +153,6 @@ const deleteCollection = async (req, res, next) => {
   }
 }
 
-exports.createCollection = createCollection
-exports.getCollection = getCollection
-exports.deleteCollection = deleteCollection
+exports.createProject = createProject
+exports.getProject = getProject
+exports.deleteProject = deleteProject

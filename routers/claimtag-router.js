@@ -1,12 +1,13 @@
 const express = require('express')
 
 const claimtagController = require('../controllers/claimtag-controller')
+const { auth, adminAuth } = require('../middleware/auth')
 
 const router = express.Router()
 
-router.post('/', claimtagController.createClaimtag)
-router.get('/:cid', claimtagController.getClaimtag)
-router.patch('/:cid', claimtagController.claimClaimtag)
-router.delete('/:cid', claimtagController.deleteClaimtag)
+router.post('/', adminAuth, claimtagController.createClaimtag)
+router.get('/:path', claimtagController.getClaimtag)
+router.patch('/:path', claimtagController.claimClaimtag)
+router.delete('/:cid', adminAuth, claimtagController.deleteClaimtag)
 
 module.exports = router

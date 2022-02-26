@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const collectionSchema = new Schema(
+const projectSchema = new Schema(
   {
     owner: { type: mongoose.Types.ObjectId, ref: 'User' },
     name: { type: String },
@@ -9,14 +9,14 @@ const collectionSchema = new Schema(
   { timestamps: true, toJSON: { virtuals: true } }
 )
 
-collectionSchema.methods.toJSON = function () {
-  const collection = this
-  const collectionObject = collection.toObject({
+projectSchema.methods.toJSON = function () {
+  const project = this
+  const projectObject = project.toObject({
     getters: true,
     virtuals: true,
   })
 
-  return collectionObject
+  return projectObject
 }
 
-module.exports = mongoose.model('Collection', collectionSchema)
+module.exports = mongoose.model('Project', projectSchema)

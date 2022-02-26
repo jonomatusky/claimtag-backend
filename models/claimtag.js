@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const Schema = mongoose.Schema
+const base64url = require('base64url')
+const { encode } = require('punycode')
 
 const claimtagSchema = new Schema(
   {
@@ -13,12 +15,11 @@ const claimtagSchema = new Schema(
         }
       },
     },
-    collection: {
+    project: {
       type: mongoose.Types.ObjectId,
-      required: true,
-      ref: 'Claimtag',
+      ref: 'Project',
     },
-    owner: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+    owner: { type: mongoose.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true, toJSON: { virtuals: true } }
 )
@@ -29,5 +30,9 @@ claimtagSchema.methods.toJSON = function () {
 
   return claimtagObject
 }
+
+claimtagSchema.virtual('path').get(function () {
+  return base64url(this._id, 'hex')
+})
 
 module.exports = mongoose.model('Claimtag', claimtagSchema)

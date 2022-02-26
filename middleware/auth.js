@@ -21,8 +21,8 @@ const verifyToken = async token => {
 }
 
 const getUser = async decodedToken => {
-  const { uid: fid } = decodedToken
-  let user
+  const { uid: fid, email } = decodedToken
+  let user = { fid }
 
   if (fid) {
     try {
@@ -36,17 +36,36 @@ const getUser = async decodedToken => {
     }
   }
 
+  if (!user) {
+    user = { fid }
+  }
+
+  if (!!email) {
+    user.email = email
+  }
+
   return user
 }
 
 const id = async (req, res, next) => {
   let token = getToken(req)
-  const decodedToken = await verifyToken(token)
 
   if (token) {
+    let decodedToken
     req.token = token
-
     let user
+
+    try {
+      decodedToken = await verifyToken(token)
+    } catch (err) {
+      const error = new HttpError('Unable to verify user.', 500)
+      return next(error)
+    }
+
+    if (!decodedToken) {
+      const error = new HttpError('Unable to verify user.', 500)
+      return next(error)
+    }
 
     try {
       user = await getUser(decodedToken)
@@ -58,25 +77,6 @@ const id = async (req, res, next) => {
   return next()
 }
 
-const verify = async (req, res, next) => {
-  let token = getToken(req)
-
-  if (!token) {
-    const error = new HttpError('Please log in to continue.', 401)
-    return next(error)
-  }
-
-  const verified = await verifyToken(token)
-
-  if (!verified) {
-    const error = new HttpError('Please log in to continue.', 401)
-    return next(error)
-  }
-
-  req.token = token
-  next()
-}
-
 const auth = async (req, res, next) => {
   let token = getToken(req)
 
@@ -85,9 +85,9 @@ const auth = async (req, res, next) => {
     return next(error)
   }
 
-  const { verified, decodedToken } = await verifyToken(token)
+  const decodedToken = await verifyToken(token)
 
-  if (!verified) {
+  if (!decodedToken) {
     const error = new HttpError('Please log in to continue.', 401)
     return next(error)
   }
@@ -99,7 +99,6 @@ const auth = async (req, res, next) => {
   try {
     user = await getUser(decodedToken)
   } catch (err) {
-    console.log(err)
     const error = new HttpError(
       'Unable to connect to server. Please try again.',
       500
@@ -117,14 +116,6 @@ const adminAuth = async (req, res, next) => {
   let token = getToken(req)
 
   if (!token) {
-    const error = new HttpError('Please log in to continue.', 401)
-    return next(error)
-  }
-
-  //isDepricated shows if this is a request from Plynth 1.0
-  const { verified, decodedToken } = await verifyToken(token)
-
-  if (!verified) {
     const error = new HttpError('Please log in to continue.', 401)
     return next(error)
   }
@@ -156,6 +147,5 @@ const adminAuth = async (req, res, next) => {
 }
 
 exports.id = id
-exports.verify = verify
 exports.auth = auth
 exports.adminAuth = adminAuth
