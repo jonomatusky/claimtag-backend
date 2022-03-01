@@ -11,7 +11,8 @@ const { SITE_URL } = process.env
 const sendProjectEmail = async (req, res, next) => {
   const { user } = req
   const { pid } = req.params
-  const { email, isSubscribed } = req.body
+  let { isSubscribed } = req.body
+  const email = req.body.email || user.email
 
   const message = `<p>Your Claimtags are ready!<br><br><a href="${SITE_URL}/download/${pid}">Click here</a> to access and download <br><br> Sent from the <a href="${SITE_URL}">Claimtag</a> team. If you did not request this email, please ignore it.</p>`
 

@@ -29,8 +29,6 @@ const getClaimtag = async (req, res, next) => {
 
   let claimtag
 
-  console.log(base64url.encode('620fabe8e005d3a9a7b557b3', 'hex'))
-
   if (!claimtagId) {
     const error = new HttpError(
       'There was an error retreiving this claimtag. Please try again.',
@@ -67,7 +65,6 @@ const getClaimtag = async (req, res, next) => {
 const claimClaimtag = async (req, res, next) => {
   const { path } = req.params
   const { url } = req.body
-  console.log(url)
   let claimtag
 
   const claimtagId = base64url.decode(path, 'hex')

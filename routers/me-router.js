@@ -22,10 +22,6 @@ router.get('/projects/:cid', auth, myProjectController.getProject)
 
 router.delete('/projects/:cid', auth, myProjectController.deleteProject)
 
-router.get(
-  '/me/projects/:cid/claimtags',
-  auth,
-  myProjectController.getClaimtags
-)
+router.get('/projects/:cid/claimtags', auth, myProjectController.getClaimtags)
 
 module.exports = router

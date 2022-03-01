@@ -3,21 +3,12 @@ const User = require('../models/user')
 var admin = require('firebase-admin')
 
 const getToken = req => {
-  try {
-    let token = req.headers.authorization.split(' ')[1]
-    return token
-  } catch (err) {
-    return new Error(`Unable to get token from header`)
-  }
+  return req.headers.authorization.split(' ')[1]
 }
 
 const verifyToken = async token => {
-  try {
-    let decodedToken = await admin.auth().verifyIdToken(token)
-    return decodedToken
-  } catch (err) {
-    return new Error(`Unable to verify token`)
-  }
+  let decodedToken = await admin.auth().verifyIdToken(token)
+  return decodedToken
 }
 
 const getUser = async decodedToken => {
@@ -48,37 +39,50 @@ const getUser = async decodedToken => {
 }
 
 const id = async (req, res, next) => {
-  let token = getToken(req)
+  let token
+  let decodedToken
+  let user
 
-  if (token) {
-    let decodedToken
-    req.token = token
-    let user
-
-    try {
-      decodedToken = await verifyToken(token)
-    } catch (err) {
-      const error = new HttpError('Unable to verify user.', 500)
-      return next(error)
-    }
-
-    if (!decodedToken) {
-      const error = new HttpError('Unable to verify user.', 500)
-      return next(error)
-    }
-
-    try {
-      user = await getUser(decodedToken)
-    } catch (err) {}
-
-    req.user = user
+  try {
+    token = getToken(req)
+  } catch (err) {
+    return next()
   }
+
+  if (!token) return next()
+
+  req.token = token
+
+  try {
+    decodedToken = await verifyToken(token)
+  } catch (err) {
+    return next()
+  }
+
+  if (!decodedToken) return next()
+
+  try {
+    user = await getUser(decodedToken)
+  } catch (err) {
+    return next()
+  }
+
+  if (!user) return next()
+
+  req.user = user
 
   return next()
 }
 
 const auth = async (req, res, next) => {
-  let token = getToken(req)
+  let token
+
+  try {
+    token = getToken(req)
+  } catch (err) {
+    const error = new HttpError('Please log in to continue.', 401)
+    return next(error)
+  }
 
   if (!token) {
     const error = new HttpError('Please log in to continue.', 401)

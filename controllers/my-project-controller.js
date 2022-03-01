@@ -8,7 +8,9 @@ const { MAX_ANON_CT, MAX_CT } = process.env
 
 const createProject = async (req, res, next) => {
   const owner = req.user
-  const { count } = req.query
+  const { count } = req.body
+
+  console.log(count)
 
   // const { count } = req.body
   // let currentClaimtagCount
@@ -40,11 +42,7 @@ const createProject = async (req, res, next) => {
   let project
 
   try {
-    if (!!owner) {
-      project = new Project({ owner })
-    } else {
-      project = new Project()
-    }
+    project = new Project({ owner })
     project.save()
   } catch (err) {
     let error = new HttpError(
@@ -87,7 +85,7 @@ const createProject = async (req, res, next) => {
 }
 
 const getProject = async (req, res, next) => {
-  let user = req.user
+  let { user } = req
 
   let query = req.query || {}
   query.owner = user
@@ -108,11 +106,11 @@ const getProject = async (req, res, next) => {
 
 const getProjects = async (req, res, next) => {
   const user = req.user
-  console.log(user.id)
 
   try {
-    const projects = await Project.find({ owner: user.id })
-    console.log(projects)
+    const projects = await Project.find({ owner: user.id }, null, {
+      sort: '-createdAt',
+    })
     res
       .status(201)
       .json({ projects: projects.map(project => project.toJSON()) })
