@@ -24,8 +24,17 @@ const createClaimtag = async (req, res, next) => {
 
 const getClaimtag = async (req, res, next) => {
   const { path } = req.params
+  let claimtagId
 
-  const claimtagId = base64url.decode(path, 'hex')
+  try {
+    claimtagId = base64url.decode(path, 'hex')
+  } catch (err) {
+    const error = new HttpError(
+      'There was an error retreiving this claimtag. Please try again.',
+      500
+    )
+    return next(error)
+  }
 
   let claimtag
 
