@@ -18,7 +18,9 @@ router.post('/projects', id, myProjectController.createProject)
 
 router.get('/projects', auth, myProjectController.getProjects)
 
-router.get('/projects/:cid', auth, myProjectController.getProject)
+router.patch('/projects/:pid', auth, myProjectController.updateProject)
+
+router.get('/projects/:id', myProjectController.getProject)
 
 router.delete('/projects/:cid', auth, myProjectController.deleteProject)
 

@@ -31,7 +31,7 @@ const createMe = async (req, res, next) => {
 }
 
 const getMe = async (req, res, next) => {
-  let { user } = req
+  let user = req.user
 
   if (!user) {
     const error = new HttpError(

@@ -10,8 +10,6 @@ const createProject = async (req, res, next) => {
   const owner = req.user
   const { count } = req.body
 
-  console.log(count)
-
   // const { count } = req.body
   // let currentClaimtagCount
 
@@ -85,13 +83,14 @@ const createProject = async (req, res, next) => {
 }
 
 const getProject = async (req, res, next) => {
-  let { user } = req
+  // let { user } = req.user
+  const { id } = req.params
 
-  let query = req.query || {}
-  query.owner = user
+  // let query = req.query || {}
+  // query.owner = user
 
   try {
-    const claimtags = await Claimtag.find(query)
+    const claimtags = await Claimtag.find({ project: id })
     res
       .status(201)
       .json({ claimtags: claimtags.map(claimtag => claimtag.toJSON()) })
@@ -120,6 +119,68 @@ const getProjects = async (req, res, next) => {
       500
     )
     return next(error)
+  }
+}
+
+const updateProject = async (req, res, next) => {
+  const { user } = req
+  const { pid } = req.params
+  const updates = req.body
+
+  console.log(pid)
+
+  if (!pid) {
+    const error = new HttpError('Please provide a project id.', 400)
+    return next(error)
+  }
+
+  let project
+  let claimtags
+
+  if (!!updates.owner && updates.owner !== user.id) {
+    const error = new HttpError('Invalid updates. Please try again.', 500)
+    return next(error)
+  }
+
+  try {
+    project = await Project.findById(pid)
+  } catch (err) {
+    const error = new HttpError(
+      'Error accessing this resource. Please try again.',
+      500
+    )
+    return next(error)
+  }
+
+  if (!project) {
+    const error = new HttpError(
+      'Error accessing this resource. Please try again.',
+      404
+    )
+    return next(error)
+  }
+
+  console.log(project)
+
+  if (!!project.owner && user.id !== project.owner.id) {
+    res.status(201).json({
+      project: project.toJSON(),
+    })
+  } else {
+    try {
+      project.owner = user
+      project.save()
+    } catch (err) {
+      const error = new HttpError(
+        'Unable to add generated claimtags to your account.',
+        500
+      )
+      return next(error)
+    }
+
+    res.status(201).json({
+      project: project.toJSON(),
+    })
   }
 }
 
@@ -158,5 +219,6 @@ const getClaimtags = async (req, res, next) => {
 exports.createProject = createProject
 exports.getProject = getProject
 exports.getProjects = getProjects
+exports.updateProject = updateProject
 exports.getClaimtags = getClaimtags
 exports.deleteProject = deleteProject

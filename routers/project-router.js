@@ -6,7 +6,7 @@ const { id, adminAuth } = require('../middleware/auth')
 const router = express.Router()
 
 router.post('/', id, projectController.createProject)
-router.get('/:cid', id, projectController.getProject)
-router.delete('/:cid', adminAuth, projectController.deleteProject)
+router.get('/:id', projectController.getProject)
+router.delete('/:id', adminAuth, projectController.deleteProject)
 
 module.exports = router

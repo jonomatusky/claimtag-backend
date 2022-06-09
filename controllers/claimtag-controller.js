@@ -131,6 +131,13 @@ const deleteClaimtag = async (req, res, next) => {
   }
 }
 
+const bulkUpdate = async (req, res, next) => {
+  try {
+    bulk = People.collection.bulkWrite
+    return base64url(this._id, 'hex')
+  } catch (err) {}
+}
+
 exports.createClaimtag = createClaimtag
 exports.getClaimtag = getClaimtag
 exports.claimClaimtag = claimClaimtag
