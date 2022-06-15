@@ -8,6 +8,8 @@ const meRouter = require('./routers/me-router')
 const claimtagRouter = require('./routers/claimtag-router')
 const projectRouter = require('./routers/project-router')
 const projectEmailRouter = require('./routers/project-email-router')
+const inquiryRouter = require('./routers/inquiry-router')
+
 const { sgMail } = require('./util/sendgrid')
 
 const HttpError = require('./models/http-error')
@@ -48,6 +50,8 @@ app.use('/api/claimtags', claimtagRouter)
 app.use('/api/projects', projectRouter)
 
 app.use('/api/project-emails', projectEmailRouter)
+
+app.use('/api/inquiries', inquiryRouter)
 
 app.use((req, res, next) => {
   const error = new HttpError(`Sorry, we can seem to find this resource.`, 404)
