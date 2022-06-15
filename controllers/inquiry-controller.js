@@ -3,7 +3,7 @@ const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const create = async (req, res, next) => {
-  const { name, company, email, phone, message } = req.body
+  const { name, company, email, message } = req.body
 
   const html = `
   <p>Someone submitted the contact form at Claimtag.io</p>
@@ -12,7 +12,6 @@ const create = async (req, res, next) => {
   Name: ${name}<br>
   Email: ${email}<br>
   Outlet: ${company}<br>
-  Phone: ${phone}<br>
   Message: ${message}<br> 
   <br> 
   Reply direct to this email to respond.
