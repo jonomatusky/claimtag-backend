@@ -4,6 +4,7 @@ const Schema = mongoose.Schema
 const projectSchema = new Schema(
   {
     owner: { type: mongoose.Types.ObjectId, ref: 'User' },
+    type: { type: String, default: 'standard' },
     name: { type: String },
   },
   { timestamps: true, toJSON: { virtuals: true } }

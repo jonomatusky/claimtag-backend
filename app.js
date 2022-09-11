@@ -37,7 +37,7 @@ app.use((req, res, next) => {
     'Origin, X-Request-With, Content-Type, Accept, Authorization'
   )
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
-  console.log(req.originalUrl, req.method)
+  // console.log(req.originalUrl, req.method)
   next()
 })
 

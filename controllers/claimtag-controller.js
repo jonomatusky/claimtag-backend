@@ -47,7 +47,7 @@ const getClaimtag = async (req, res, next) => {
   }
 
   try {
-    claimtag = await Claimtag.findById(claimtagId)
+    claimtag = await Claimtag.findById(claimtagId).populate('project')
   } catch (err) {
     const error = new HttpError(
       'There was an error retreiving this claimtag. Please try again.',
@@ -65,7 +65,9 @@ const getClaimtag = async (req, res, next) => {
   }
 
   if (claimtag && !claimtag.url) {
-    return res.status(201).json({ claimtag: { status: 'unclaimed' } })
+    return res
+      .status(201)
+      .json({ claimtag: { ...claimtag.toJSON(), status: 'unclaimed' } })
   }
 
   return res.status(201).json({ claimtag: claimtag.toJSON() })
@@ -73,7 +75,8 @@ const getClaimtag = async (req, res, next) => {
 
 const claimClaimtag = async (req, res, next) => {
   const { path } = req.params
-  const { url } = req.body
+  const { url, profile } = req.body
+  console.log(profile)
   let claimtag
 
   const claimtagId = base64url.decode(path, 'hex')
@@ -105,10 +108,12 @@ const claimClaimtag = async (req, res, next) => {
   }
 
   claimtag.url = url
+  claimtag.profile = profile
 
   try {
     await claimtag.save()
   } catch (err) {
+    console.log(err)
     let error = new HttpError(
       `Sorry, we couldn't claim this claimtag. Please try again.`,
       500

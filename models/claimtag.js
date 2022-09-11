@@ -3,6 +3,7 @@ const validator = require('validator')
 const Schema = mongoose.Schema
 const base64url = require('base64url')
 const { encode } = require('punycode')
+const profileSchema = require('./profile')
 
 const claimtagSchema = new Schema(
   {
@@ -20,6 +21,7 @@ const claimtagSchema = new Schema(
       ref: 'Project',
     },
     owner: { type: mongoose.Types.ObjectId, ref: 'User' },
+    profile: { type: profileSchema },
   },
   { timestamps: true, toJSON: { virtuals: true } }
 )

@@ -127,15 +127,12 @@ const updateProject = async (req, res, next) => {
   const { pid } = req.params
   const updates = req.body
 
-  console.log(pid)
-
   if (!pid) {
     const error = new HttpError('Please provide a project id.', 400)
     return next(error)
   }
 
   let project
-  let claimtags
 
   if (!!updates.owner && updates.owner !== user.id) {
     const error = new HttpError('Invalid updates. Please try again.', 500)
@@ -160,7 +157,22 @@ const updateProject = async (req, res, next) => {
     return next(error)
   }
 
-  console.log(project)
+  const updateKeys = Object.keys(updates)
+
+  updateKeys.forEach(updateKey => {
+    project[updateKey] = updates[updateKey]
+  })
+
+  try {
+    await project.save()
+  } catch (err) {
+    console.log(err)
+    const error = new HttpError(
+      'Something went wrong, could not update the project',
+      500
+    )
+    return next(error)
+  }
 
   if (!!project.owner && user.id !== project.owner.id) {
     res.status(201).json({
