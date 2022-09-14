@@ -9,6 +9,7 @@ const claimtagRouter = require('./routers/claimtag-router')
 const projectRouter = require('./routers/project-router')
 const projectEmailRouter = require('./routers/project-email-router')
 const inquiryRouter = require('./routers/inquiry-router')
+const emailRouter = require('./routers/email-router')
 
 const { sgMail } = require('./util/sendgrid')
 
@@ -31,13 +32,14 @@ const port = PORT || 5000
 app.use(bodyParser.json())
 
 app.use((req, res, next) => {
+  // console.log(req.originalUrl, req.method)
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Origin, X-Request-With, Content-Type, Accept, Authorization'
   )
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
-  // console.log(req.originalUrl, req.method)
+
   next()
 })
 
@@ -52,6 +54,8 @@ app.use('/api/projects', projectRouter)
 app.use('/api/project-emails', projectEmailRouter)
 
 app.use('/api/inquiries', inquiryRouter)
+
+app.use('/api/emails', emailRouter)
 
 app.use((req, res, next) => {
   const error = new HttpError(`Sorry, we can seem to find this resource.`, 404)
@@ -74,7 +78,8 @@ mongoose
     `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_URL}/${DB_NAME}?retryWrites=true&w=majority`
   )
   .then(() => {
-    app.listen(port)
+    app.listen(port, '0.0.0.0')
+    // console.log(`Server is running on port ${port}`)
   })
   .catch(err => {
     console.log(err)
