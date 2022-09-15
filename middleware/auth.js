@@ -14,7 +14,6 @@ const verifyToken = async token => {
 }
 
 const getUser = async decodedToken => {
-  console.log('getting user')
   const { uid: fid, email } = decodedToken
   let user
 
@@ -188,7 +187,6 @@ const adminAuth = async (req, res, next) => {
     user = await getUser(decodedToken)
   } catch (err) {
     console.log(err)
-    console.log('unable to get user from token')
     const error = new HttpError(
       'Unable to connect to server. Please try again.',
       500

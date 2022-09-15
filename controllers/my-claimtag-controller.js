@@ -43,7 +43,7 @@ const getClaimtag = async (req, res, next) => {
     )
   }
 
-  if (claimtag && !claimtag.url) {
+  if (claimtag && !claimtag.url && !claimtag.profile) {
     return res.status(201).json({ claimtag: { status: 'unclaimed' } })
   }
 
