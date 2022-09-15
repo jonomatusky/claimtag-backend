@@ -129,7 +129,7 @@ const sendUpdateEmail = async (req, res, next) => {
 
   const html = `
   <p>Please use the link below to update your Claimtag profile: <br><br>
-  <a href="${SITE_URL}/update/${claimtagId}" target="_blank">${SITE_URL}/update/${claimtagId}</a><br><br>
+  <a href="https://ta9.cc/update/${claimtagId}" target="_blank">https://ta9.cc/update/${claimtagId}</a><br><br>
   <i>Sent via <a href="https://claimtag.io" target="_blank">Claimtags</a> powered by <a href="https://plynth.com" target="_blank">Plynth</a></i><br>
   </p>`
 
