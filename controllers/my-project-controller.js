@@ -212,10 +212,10 @@ const deleteProject = async (req, res, next) => {
 }
 
 const getClaimtags = async (req, res, next) => {
-  const { cid } = req.params
+  const { pid } = req.params
 
   try {
-    const claimtags = await Claimtag.find({ project: cid })
+    const claimtags = await Claimtag.find({ project: pid })
     res
       .status(201)
       .json({ claimtags: claimtags.map(claimtag => claimtag.toJSON()) })

@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const HttpError = require('../models/http-error')
 const Claimtag = require('../models/claimtag')
 const { default: base64url } = require('base64url')
+const Scan = require('../models/scan')
 
 const createClaimtag = async (req, res, next) => {
   const owner = req.user
@@ -24,6 +25,11 @@ const createClaimtag = async (req, res, next) => {
 
 const getClaimtag = async (req, res, next) => {
   const { path } = req.params
+
+  const tempUserId = req.headers.authorization
+    ? req.headers.authorization.split(' ')[1]
+    : null
+
   let claimtagId
 
   if (path.length === 24) {
@@ -48,6 +54,13 @@ const getClaimtag = async (req, res, next) => {
       500
     )
     return next(error)
+  }
+
+  try {
+    let scan = new Scan({ claimtag: claimtagId, tempUser: tempUserId })
+    await scan.save()
+  } catch (err) {
+    console.log(err)
   }
 
   try {
@@ -83,7 +96,7 @@ const claimClaimtag = async (req, res, next) => {
   let claimtag
   let claimtagId
 
-  if (path.length === 24) {
+  if (path && path.length === 24) {
     claimtagId = path
   } else {
     try {

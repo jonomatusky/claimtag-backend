@@ -6,6 +6,8 @@ var admin = require('firebase-admin')
 const userRouter = require('./routers/user-router')
 const meRouter = require('./routers/me-router')
 const claimtagRouter = require('./routers/claimtag-router')
+const claimRouter = require('./routers/claim-router')
+const tempUserRouter = require('./routers/temp-user-router')
 const projectRouter = require('./routers/project-router')
 const projectEmailRouter = require('./routers/project-email-router')
 const inquiryRouter = require('./routers/inquiry-router')
@@ -48,6 +50,10 @@ app.use('/api/users', userRouter)
 app.use('/api/me', meRouter)
 
 app.use('/api/claimtags', claimtagRouter)
+
+app.use('/api/claims', claimRouter)
+
+app.use('/api/temp-users', tempUserRouter)
 
 app.use('/api/projects', projectRouter)
 
